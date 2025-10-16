@@ -1,0 +1,15 @@
+{
+  "photoLocation": "Inventory\\Screenies\\Workout",
+  "photoSystemsLegacy": [
+    {
+      "triggerTag": null,
+      "staticTexture2D": ["FrooxEngine.StaticTexture2D", 2],
+      "photoMetadata": ["FrooxEngine.PhotoMetadata", 8]
+    },
+    {
+      "triggerTag": "polaroid",
+      "staticTexture2D": [4],
+      "photoMetadata": [6]
+    }
+  ]
+}
