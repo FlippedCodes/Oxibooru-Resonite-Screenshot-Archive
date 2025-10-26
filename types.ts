@@ -5,7 +5,7 @@ export type safetyLevels = 'safe' | 'sketchy' | 'unsafe'
 type location = {
   name: string;
   host: string;
-  accessLevel: 'Anyone' | 'RegisteredUsers' | 'FriendsOfFriends' | 'Private';
+  accessLevel: 'Anyone' | 'RegisteredUsers' | 'FriendsOfFriends' | 'Private' | 'Contacts';
   hiddenFromListing: boolean;
 };
 

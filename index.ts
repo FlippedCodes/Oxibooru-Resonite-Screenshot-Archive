@@ -223,6 +223,7 @@ await assetRecords
     let safety: safetyLevels = 'safe';
     // order is important
     if (record.photoMetadata.location.accessLevel === 'FriendsOfFriends') safety = 'sketchy';
+    if (record.photoMetadata.location.accessLevel === 'Contacts') safety = 'unsafe';
     if (record.photoMetadata.location.accessLevel === 'Private') safety = 'unsafe';
     if (record.photoMetadata.location.hiddenFromListing === true) safety = 'unsafe';
 
