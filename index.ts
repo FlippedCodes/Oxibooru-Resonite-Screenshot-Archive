@@ -196,9 +196,15 @@ await assetRecords
       contentToken: contentToken.token,
     })) as validatePostResponse;
     if (validatePostResp.exactPost !== null) return deleteResoniteRecord(record, i);
+
+    // remove duplicate location name
+    const defaultTags = record.tags.map((tag) => tag.replace(/<[^>]+>/g, ''));
+    const locationNameIndex = defaultTags.indexOf(record.photoMetadata.location.name.toLowerCase());
+    if (locationNameIndex !== -1) defaultTags.splice(locationNameIndex, 1);
+
     // get all data and put into array for tags
     const tags = [
-      ...record.tags.map((tag) => tag.replace(/<[^>]+>/g, '')),
+      ...defaultTags,
       ...record.photoMetadata.userIds,
       record.ownerId,
       `savedBy:${record.ownerId}`,
@@ -209,7 +215,6 @@ await assetRecords
       record.photoMetadata.location.accessLevel,
       `accessLevel:${record.photoMetadata.location.accessLevel}`,
       `hidden:${record.photoMetadata.location.hiddenFromListing}`,
-      // record.photoMetadata.takenBy,
       `takenBy:${record.photoMetadata.takenBy}`,
       record.photoMetadata.timeTaken.toISOString(),
       `importerVersion:${appVersion}`,
