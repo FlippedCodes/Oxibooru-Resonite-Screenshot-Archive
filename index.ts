@@ -213,12 +213,11 @@ await assetRecords
       `takenBy:${record.photoMetadata.takenBy}`,
       record.photoMetadata.timeTaken.toISOString(),
       `importerVersion:${appVersion}`,
+      record.photoMetadata.appVersion,
+      // check if modded app-version is set
+      record.photoMetadata.appVersion.includes('+') ? record.photoMetadata.appVersion.split('+')[0]! : null,
     ].filter((tag) => tag).map((tag) => tag?.replaceAll(' ', '_'));
-    // check if app version is set
-    if (record.photoMetadata.appVersion) {
-      tags.push(record.photoMetadata.appVersion);
-      tags.push(record.photoMetadata.appVersion.split('+')[0]!);
-    }
+
     // get safety level
     let safety: safetyLevels = 'safe';
     // order is important
