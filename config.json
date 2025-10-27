@@ -1,5 +1,6 @@
 {
   "photoLocation": "Inventory\\Screenies",
+  "deleteSourcePictures": false,
   "photoSystemsLegacy": [
     {
       "triggerTag": null,

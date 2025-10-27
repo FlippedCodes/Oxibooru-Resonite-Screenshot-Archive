@@ -176,10 +176,11 @@ async function oxibooru(
 // if successful, send delete request for the image to resonite
 async function deleteResoniteRecord(record: resoniteInventoryRecord, i: number) {
   console.log(i, record.photoMetadata.location.name);
-  // await fetch(
-  //   `https://api.resonite.com/users/${tokenBody.entity.userId}/records/${record.id}`,
-  //   { method: HTTPMethodOxibooru.delete, headers: { Authorization } }
-  // );
+  if (!config.deleteSourcePictures) return;
+  await fetch(
+    `https://api.resonite.com/users/${tokenBody.entity.userId}/records/${record.id}`,
+    { method: HTTPMethodOxibooru.delete, headers: { Authorization } }
+  );
 }
 
 // #region Create Posts
