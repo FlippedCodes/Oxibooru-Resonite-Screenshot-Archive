@@ -129,10 +129,12 @@ const assetRecords = await Promise.all(
 
     let staticTexture2D: any = null;
     let photoMetadata: any = null;
+    // determine if screenshot is legacy or not
     if (doc.Types) {
       staticTexture2D = components.find((comp: any) => comp.Type === doc.Types.indexOf('[FrooxEngine]FrooxEngine.StaticTexture2D'));
       photoMetadata = components.find((comp: any) => comp.Type === doc.Types.indexOf('[FrooxEngine]FrooxEngine.PhotoMetadata'));
     } else {
+      // legacy screenshots lack the Types definition. This is a hack to find the components with the correct data.
       config.resonite.photoSystemsLegacy.forEach((photoSystem) => {
         if (
           record.tags.includes(photoSystem.triggerTag ? photoSystem.triggerTag : 'camera_photo')
