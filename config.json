@@ -3,7 +3,7 @@
     "photoLocation": "Inventory\\Screenies",
     "photoSystemsLegacy": [
       {
-        "triggerTag": null,
+        "triggerTag": "camera_photo",
         "staticTexture2D": ["FrooxEngine.StaticTexture2D", 2],
         "photoMetadata": ["FrooxEngine.PhotoMetadata", 8]
       },

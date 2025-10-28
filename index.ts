@@ -137,7 +137,7 @@ const assetRecords = await Promise.all(
       // legacy screenshots lack the Types definition. This is a hack to find the components with the correct data.
       config.resonite.photoSystemsLegacy.forEach((photoSystem) => {
         if (
-          record.tags.includes(photoSystem.triggerTag ? photoSystem.triggerTag : 'camera_photo')
+          record.tags.includes(photoSystem.triggerTag)
         ) {
           staticTexture2D = components.find((comp: any) =>
             photoSystem.staticTexture2D.includes(comp.Type)
