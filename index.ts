@@ -73,6 +73,8 @@ if (authResult.requiresTOTP) {
     });
   });
   
+  process.stdin.destroy();
+  
   const retryResult = await authenticateWithResonite(totpCode);
   tokenBody = retryResult.tokenBody;
   Authorization = retryResult.Authorization;
