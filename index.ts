@@ -86,7 +86,7 @@ if (authResult.requiresTOTP) {
 
 // #region get scr records
 const recordsRaw = await fetch(
-  `https://api.resonite.com/users/${tokenBody.entity.userId}/records?path=${config.photoLocation}`,
+  `https://api.resonite.com/users/${tokenBody.entity.userId}/records?path=${config.resonite.photoLocation}`,
   { headers: { Authorization } }
 );
 const baseRecords = (await recordsRaw.json()) as resoniteInventoryRecord[];
@@ -133,7 +133,7 @@ const assetRecords = await Promise.all(
       staticTexture2D = components.find((comp: any) => comp.Type === doc.Types.indexOf('[FrooxEngine]FrooxEngine.StaticTexture2D'));
       photoMetadata = components.find((comp: any) => comp.Type === doc.Types.indexOf('[FrooxEngine]FrooxEngine.PhotoMetadata'));
     } else {
-      config.photoSystemsLegacy.forEach((photoSystem) => {
+      config.resonite.photoSystemsLegacy.forEach((photoSystem) => {
         if (
           record.tags.includes(photoSystem.triggerTag ? photoSystem.triggerTag : 'camera_photo')
         ) {
@@ -222,7 +222,7 @@ async function oxibooru(
 // if successful, send delete request for the image to resonite
 async function deleteResoniteRecord(record: resoniteInventoryRecord, i: number) {
   console.log(i, record.photoMetadata.location.name);
-  if (!config.deleteSourcePictures) return;
+  if (!config.oxibooru.deleteSourcePictures) return;
   await fetch(
     `https://api.resonite.com/users/${tokenBody.entity.userId}/records/${record.id}`,
     { method: HTTPMethodOxibooru.delete, headers: { Authorization } }

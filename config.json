@@ -1,16 +1,20 @@
 {
-  "photoLocation": "Inventory\\Screenies",
-  "deleteSourcePictures": false,
-  "photoSystemsLegacy": [
-    {
-      "triggerTag": null,
-      "staticTexture2D": ["FrooxEngine.StaticTexture2D", 2],
-      "photoMetadata": ["FrooxEngine.PhotoMetadata", 8]
-    },
-    {
-      "triggerTag": "polaroid",
-      "staticTexture2D": [4],
-      "photoMetadata": [6]
-    }
-  ]
+  "resonite": {
+    "photoLocation": "Inventory\\Screenies",
+    "photoSystemsLegacy": [
+      {
+        "triggerTag": null,
+        "staticTexture2D": ["FrooxEngine.StaticTexture2D", 2],
+        "photoMetadata": ["FrooxEngine.PhotoMetadata", 8]
+      },
+      {
+        "triggerTag": "polaroid",
+        "staticTexture2D": [4],
+        "photoMetadata": [6]
+      }
+    ]
+  },
+  "oxibooru": {
+    "deleteSourcePictures": false
+  }
 }
