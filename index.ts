@@ -18,7 +18,9 @@ import { HTTPMethodOxibooru } from './types';
 import config from './config.json';
 
 // #region get userToken
-async function authenticateWithResonite(totpCode?: string): Promise<{ tokenBody: tokenBody; Authorization: string; requiresTOTP: boolean }> {
+async function authenticateWithResonite(
+  totpCode?: string
+): Promise<{ tokenBody: tokenBody; Authorization: string; requiresTOTP: boolean }> {
   const authHeaders: Record<string, string> = {
     UID: process.env.resoniteMachineId as string,
     'Content-Type': 'application/json',
@@ -44,17 +46,19 @@ async function authenticateWithResonite(totpCode?: string): Promise<{ tokenBody:
 
   if (!tokenResp.ok) {
     const errorText = await tokenResp.text();
-    
+
     if (errorText === 'TOTP') {
       return { tokenBody: null as any, Authorization: '', requiresTOTP: true };
     }
-    
-    throw new Error(`Authentication failed: ${tokenResp.status} ${tokenResp.statusText} - ${errorText}`);
+
+    throw new Error(
+      `Authentication failed: ${tokenResp.status} ${tokenResp.statusText} - ${errorText}`
+    );
   }
 
   const tokenBody = (await tokenResp.json()) as tokenBody;
   const Authorization = `res ${tokenBody.entity.userId}:${tokenBody.entity.token}`;
-  
+
   return { tokenBody, Authorization, requiresTOTP: false };
 }
 
@@ -66,15 +70,15 @@ const authResult = await authenticateWithResonite();
 if (authResult.requiresTOTP) {
   console.log('2FA is required for this account.');
   console.log('Please enter your 6-digit TOTP code:');
-  
+
   const totpCode = await new Promise<string>((resolve) => {
     process.stdin.once('data', (data: Buffer) => {
       resolve(data.toString().trim());
     });
   });
-  
+
   process.stdin.destroy();
-  
+
   const retryResult = await authenticateWithResonite(totpCode);
   tokenBody = retryResult.tokenBody;
   Authorization = retryResult.Authorization;
@@ -131,14 +135,16 @@ const assetRecords = await Promise.all(
     let photoMetadata: any = null;
     // determine if screenshot is legacy or not
     if (doc.Types) {
-      staticTexture2D = components.find((comp: any) => comp.Type === doc.Types.indexOf('[FrooxEngine]FrooxEngine.StaticTexture2D'));
-      photoMetadata = components.find((comp: any) => comp.Type === doc.Types.indexOf('[FrooxEngine]FrooxEngine.PhotoMetadata'));
+      staticTexture2D = components.find(
+        (comp: any) => comp.Type === doc.Types.indexOf('[FrooxEngine]FrooxEngine.StaticTexture2D')
+      );
+      photoMetadata = components.find(
+        (comp: any) => comp.Type === doc.Types.indexOf('[FrooxEngine]FrooxEngine.PhotoMetadata')
+      );
     } else {
       // legacy screenshots lack the Types definition. This is a hack to find the components with the correct data.
       config.resonite.photoSystemsLegacy.forEach((photoSystem) => {
-        if (
-          record.tags.includes(photoSystem.triggerTag)
-        ) {
+        if (record.tags.includes(photoSystem.triggerTag)) {
           staticTexture2D = components.find((comp: any) =>
             photoSystem.staticTexture2D.includes(comp.Type)
           );
@@ -225,10 +231,10 @@ async function oxibooru(
 async function deleteResoniteRecord(record: resoniteInventoryRecord, i: number) {
   console.log(i, record.photoMetadata.location.name);
   if (!config.oxibooru.deleteSourcePictures) return;
-  await fetch(
-    `https://api.resonite.com/users/${tokenBody.entity.userId}/records/${record.id}`,
-    { method: HTTPMethodOxibooru.delete, headers: { Authorization } }
-  );
+  await fetch(`https://api.resonite.com/users/${tokenBody.entity.userId}/records/${record.id}`, {
+    method: HTTPMethodOxibooru.delete,
+    headers: { Authorization },
+  });
 }
 
 // #region Create Posts
@@ -276,8 +282,12 @@ await assetRecords
       `importerVersion:${appVersion}`,
       record.photoMetadata.appVersion,
       // check if modded app-version is set
-      record.photoMetadata.appVersion.includes('+') ? record.photoMetadata.appVersion.split('+')[0]! : null,
-    ].filter((tag) => tag).map((tag) => tag?.replaceAll(' ', '_'));
+      record.photoMetadata.appVersion.includes('+')
+        ? record.photoMetadata.appVersion.split('+')[0]!
+        : null,
+    ]
+      .filter((tag) => tag)
+      .map((tag) => tag?.replaceAll(' ', '_'));
 
     // get safety level
     let safety: safetyLevels = 'safe';
