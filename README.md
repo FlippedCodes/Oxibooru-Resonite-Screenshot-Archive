@@ -26,7 +26,7 @@ Froox Example             |  Phil Example
 > If you plan on working on the script you should install it with dev-dependencies: `bun install`
 
 1. Install the required dependencies with `bun install --production`.
-1. Rename `dist.env` to `.env` 
+1. Rename `dist.env` to `.env`
 1. Add logins and tokens to `.env`
 1. Adjust `photoLocation` in `config.json` file
 
