@@ -42,6 +42,10 @@ When you made sure it ran smoothly and all pictures are in the booru, you can re
 > [!NOTE]
 > The script will skip screenshots that are already added.
 
+## Honorable mentions
+
+This project was inspired by [yoshs' bash implementation](https://git.unix.dog/yosh/misc-scripts/src/branch/master/resonite-photoexif) and a great help to deal with Resonite's bson implementation.
+
 ## Why
 
 Resonite inventory records have more metadata, then Steam-Screenshots or File-Exports. This allows for extra information, like session names, attendees, camera settings and camera man. All this info can be used nicely inside an Imageboard, like Oxibooru.
@@ -69,10 +73,6 @@ I decided to scrap the idea of importing multiple and nested folders. All pictur
 
 It was considered to maybe run [Immich](https://immich.app/), but that is more useful for IRL pictures.
 I use both for other projects felt a booru is the best way to store pictures like this, because Since there is a lot of information the screenshots can be sorted by.
-
-## Honorable mentions
-
-This project was inspired by [yoshs' bash implementation](https://git.unix.dog/yosh/misc-scripts/src/branch/master/resonite-photoexif) and a great help to deal with Resonite's bson implementation.
 
 ## ToDo-List
 
