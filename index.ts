@@ -18,24 +18,70 @@ import { HTTPMethodOxibooru } from './types';
 import config from './config.json';
 
 // #region get userToken
-const tokenResp = await fetch('https://api.resonite.com/userSessions', {
-  method: HTTPMethodOxibooru.post,
-  body: JSON.stringify({
-    username: process.env.resoniteUsername as string,
-    authentication: {
-      $type: 'password',
-      password: process.env.resonitePassword as string,
-    },
-    secretMachineId: `${crypto.randomUUID()}`,
-    rememberMe: false,
-  }),
-  headers: {
+async function authenticateWithResonite(totpCode?: string): Promise<{ tokenBody: tokenBody; Authorization: string; requiresTOTP: boolean }> {
+  const authHeaders: Record<string, string> = {
     UID: process.env.resoniteMachineId as string,
     'Content-Type': 'application/json',
-  },
-});
-const tokenBody = (await tokenResp.json()) as tokenBody;
-const Authorization = `res ${tokenBody.entity.userId}:${tokenBody.entity.token}`;
+  };
+
+  if (totpCode && totpCode.trim() !== '') {
+    authHeaders.TOTP = totpCode;
+  }
+
+  const tokenResp = await fetch('https://api.resonite.com/userSessions', {
+    method: HTTPMethodOxibooru.post,
+    body: JSON.stringify({
+      username: process.env.resoniteUsername as string,
+      authentication: {
+        $type: 'password',
+        password: process.env.resonitePassword as string,
+      },
+      secretMachineId: `${crypto.randomUUID()}`,
+      rememberMe: false,
+    }),
+    headers: authHeaders,
+  });
+
+  if (!tokenResp.ok) {
+    const errorText = await tokenResp.text();
+    
+    if (errorText === 'TOTP') {
+      return { tokenBody: null as any, Authorization: '', requiresTOTP: true };
+    }
+    
+    throw new Error(`Authentication failed: ${tokenResp.status} ${tokenResp.statusText} - ${errorText}`);
+  }
+
+  const tokenBody = (await tokenResp.json()) as tokenBody;
+  const Authorization = `res ${tokenBody.entity.userId}:${tokenBody.entity.token}`;
+  
+  return { tokenBody, Authorization, requiresTOTP: false };
+}
+
+let tokenBody: tokenBody;
+let Authorization: string;
+
+const authResult = await authenticateWithResonite();
+
+if (authResult.requiresTOTP) {
+  console.log('2FA is required for this account.');
+  console.log('Please enter your 6-digit TOTP code:');
+  
+  const totpCode = await new Promise<string>((resolve) => {
+    process.stdin.once('data', (data: Buffer) => {
+      resolve(data.toString().trim());
+    });
+  });
+  
+  process.stdin.destroy();
+  
+  const retryResult = await authenticateWithResonite(totpCode);
+  tokenBody = retryResult.tokenBody;
+  Authorization = retryResult.Authorization;
+} else {
+  tokenBody = authResult.tokenBody;
+  Authorization = authResult.Authorization;
+}
 // #endregion
 
 // #region get scr records
