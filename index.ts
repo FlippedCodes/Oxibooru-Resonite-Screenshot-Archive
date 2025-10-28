@@ -244,10 +244,17 @@ await assetRecords
     })) as validatePostResponse;
     if (validatePostResp.exactPost !== null) return deleteResoniteRecord(record, i);
 
-    // remove duplicate location name
+    // sanitize default tags
     const defaultTags = record.tags.map((tag) => tag.replace(/<[^>]+>/g, ''));
-    const locationNameIndex = defaultTags.indexOf(record.photoMetadata.location.name.toLowerCase());
-    if (locationNameIndex !== -1) defaultTags.splice(locationNameIndex, 1);
+    [
+      record.photoMetadata.location.name.toLowerCase(),
+      defaultTags.find((tag) => tag.startsWith('texture_asset')) || '',
+      defaultTags.find((tag) => tag.startsWith('timestamp')) || '',
+      'in',
+    ].forEach((removeTag) => {
+      const removeIndex = defaultTags.indexOf(removeTag);
+      if (removeIndex !== -1) defaultTags.splice(removeIndex, 1);
+    });
 
     // get all data and put into array for tags
     const tags = [
@@ -263,7 +270,7 @@ await assetRecords
       `accessLevel:${record.photoMetadata.location.accessLevel}`,
       `hidden:${record.photoMetadata.location.hiddenFromListing}`,
       `takenBy:${record.photoMetadata.takenBy}`,
-      record.photoMetadata.timeTaken.toISOString(),
+      record.photoMetadata.timeTaken.toISOString().split('T')[0],
       `importerVersion:${appVersion}`,
       record.photoMetadata.appVersion,
       // check if modded app-version is set

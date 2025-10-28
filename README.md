@@ -78,7 +78,7 @@ This project was inspired by [yoshs' bash implementation](https://git.unix.dog/y
 
 - [ ] Get usernames from Resonite API and add as tags
 - [ ] Support for saved image-grabbers/slurpers
-- [ ] Remove tags, that are only used once
+- [x] Remove tags, that are only used once
   - Limit Timestamp to Hours
   - texture_asset
 - [ ] Consolidate tags in Oxibooru
