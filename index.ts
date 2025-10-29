@@ -258,6 +258,10 @@ await assetRecords
       record.photoMetadata.location.name.toLowerCase(),
       defaultTags.find((tag) => tag.startsWith('texture_asset')) || '',
       defaultTags.find((tag) => tag.startsWith('timestamp')) || '',
+      defaultTags.find((tag) => tag.startsWith('location_accesslevel')) || '',
+      defaultTags.find((tag) => tag.startsWith('location_hiddenfromlisting')) || '',
+      defaultTags.find((tag) => tag.startsWith('location_host')) || '',
+      defaultTags.find((tag) => tag.startsWith('location_name')) || '',
       'in',
     ].forEach((removeTag) => {
       const removeIndex = defaultTags.indexOf(removeTag);
