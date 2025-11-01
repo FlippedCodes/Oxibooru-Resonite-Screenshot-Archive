@@ -283,7 +283,7 @@ await assetRecords
       `hidden:${record.photoMetadata.location.hiddenFromListing}`,
       `takenBy:${record.photoMetadata.takenBy}`,
       record.photoMetadata.timeTaken.toISOString().split('T')[0],
-      `importerVersion:${appVersion}`,
+      appVersion,
       record.photoMetadata.appVersion,
       // check if modded app-version is set
       record.photoMetadata.appVersion.includes('+')
