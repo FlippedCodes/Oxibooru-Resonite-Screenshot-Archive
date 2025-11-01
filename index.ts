@@ -280,7 +280,7 @@ await assetRecords
       `host:${record.photoMetadata.location.host}`,
       record.photoMetadata.location.accessLevel,
       `accessLevel:${record.photoMetadata.location.accessLevel}`,
-      `hidden:${record.photoMetadata.location.hiddenFromListing}`,
+      record.photoMetadata.location.hiddenFromListing ? 'hiddenSession' : null,
       `takenBy:${record.photoMetadata.takenBy}`,
       record.photoMetadata.timeTaken.toISOString().split('T')[0],
       appVersion,
