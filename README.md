@@ -44,7 +44,7 @@ When you made sure it ran smoothly and all pictures are in the booru, you can re
 
 ## Honorable mentions
 
-This project was inspired by [yoshs' bash implementation](https://git.unix.dog/yosh/misc-scripts/src/branch/master/resonite-photoexif) and a great help to deal with Resonite's bson implementation.
+This project was inspired by [yoshs' bash implementation](https://git.unix.dog/yosh/misc-scripts/src/branch/master/resonite-photoexif) and a great help to deal with Resonite's bson implementation. Also thankies goes out to JayKub for helping otu with coding. ~~I'm new to typescript!. Please don't hurt meeee!~~
 
 ## Why
 
