@@ -219,7 +219,7 @@ async function oxibooru(
     headers: oxibooruHeaders,
   });
   if (!outRaw.ok) {
-    console.debug(fn.endpoint, outRaw.statusText, await outRaw.text());
+    console.warn(fn.endpoint, outRaw.statusText, await outRaw.text());
     return null;
   }
   const output = await outRaw.json();
