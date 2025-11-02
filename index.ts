@@ -227,6 +227,7 @@ async function oxibooru(
 }
 // #endregion
 
+// #region Create Posts
 // if successful, send delete request for the image to resonite
 async function deleteResoniteRecord(record: resoniteInventoryRecord, i: number) {
   console.log(i, record.photoMetadata.location.name);
@@ -237,7 +238,6 @@ async function deleteResoniteRecord(record: resoniteInventoryRecord, i: number) 
   });
 }
 
-// #region Create Posts
 await assetRecords
   // clear out nulled records.
   .filter((out) => out !== null)
