@@ -262,9 +262,11 @@ async function deleteResoniteRecord(record: resoniteInventoryRecord, i: number) 
   });
 }
 
-await assetRecords
   // clear out nulled records.
-  .filter((out) => out !== null)
+const assetRecordsClean = assetRecords
+  .filter((out) => out !== null);
+
+await assetRecordsClean
   .forEach(async (record, i) => {
     // upload file
     const contentToken = (await oxibooru(oxibooruFunctions.uploadPost!, undefined, {
