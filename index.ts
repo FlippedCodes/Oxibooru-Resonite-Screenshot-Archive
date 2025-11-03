@@ -11,6 +11,7 @@ import type {
   uploadPostResponse,
   validatePostResponse,
   safetyLevels,
+  getTagCategoriesResponse,
 } from './types';
 
 import { HTTPMethodOxibooru } from './types';
@@ -206,6 +207,9 @@ const oxibooruFunctions: oxibooruFunctionTypes = {
   uploadPost: { method: HTTPMethodOxibooru.post, endpoint: 'uploads/' },
   validatePost: { method: HTTPMethodOxibooru.post, endpoint: 'posts/reverse-search/' },
   createPost: { method: HTTPMethodOxibooru.post, endpoint: 'posts/' },
+  getTagCategories: { method: HTTPMethodOxibooru.get, endpoint: 'tag-categories/' },
+  createTagCategory: { method: HTTPMethodOxibooru.post, endpoint: 'tag-categories/' },
+  updateTagCategory: { method: HTTPMethodOxibooru.put, endpoint: 'tag-category/' },
 } as const;
 
 async function oxibooru(
@@ -224,6 +228,26 @@ async function oxibooru(
   }
   const output = await outRaw.json();
   return output;
+}
+// #endregion
+
+// #region Update tag category
+if (config.oxibooru.useCategories) {
+  const configTagCategories = Object.entries(config.oxibooru.categories).map((e) => e[1]);
+  const currentTagCategories = await oxibooru(oxibooruFunctions.getTagCategories!, undefined, undefined) as getTagCategoriesResponse;
+  await configTagCategories.forEach(async (configCategoryName, i) => {
+    // check, if category was created
+    const foundEntry = currentTagCategories.results.find((category) => category.name === configCategoryName);
+    if (!foundEntry) {
+      const output = await oxibooru(oxibooruFunctions.createTagCategory!, undefined, {
+        name:  configCategoryName,
+        color: 'default',
+        order: i
+      });
+      if (!output) throw new Error('Couldn\'t create a category.');
+      return;
+    }
+  });
 }
 // #endregion
 
@@ -309,6 +333,8 @@ await assetRecords
       source: record.assetURL,
       safety,
     });
-    if (post) return deleteResoniteRecord(record, i);
+    // delete resonite image if picture was added successfully
+    if (post) deleteResoniteRecord(record, i);
   });
 // #endregion
+

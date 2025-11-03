@@ -15,6 +15,20 @@
     ]
   },
   "oxibooru": {
-    "deleteSourcePictures": false
+    "dangerSettings": "READ DOCS BEFORE TOUCHING!",
+    "deleteSourcePictures": false,
+    "useCategories": true,
+    "categories": {
+      "users": "User",
+      "host": "SessionHost",
+      "accessLevel": "AccessLevel",
+      "savedBy": "SavedBy",
+      "sessionName": "SessionName",
+      "hidden": "HiddenSession",
+      "takenBy": "TakenBy",
+      "dateTaken": "DateTaken",
+      "importerVersion": "ImporterVersion",
+      "gameVersion": "GameVersion"
+    }
   }
 }

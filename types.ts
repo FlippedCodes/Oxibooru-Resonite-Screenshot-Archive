@@ -45,6 +45,17 @@ export type validatePostResponse = {
   similarPosts: string[];
 };
 
+export type getTagCategoriesResponse = {
+  results: {
+    version: Date;
+    name: string;
+    color: string;
+    usages: number;
+    order: number;
+    default: boolean;
+  }[]
+};
+
 export type resoniteInventoryRecord = {
   id: string;
   name: `Photo in ${string}`;
