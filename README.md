@@ -76,11 +76,14 @@ I use both for other projects felt a booru is the best way to store pictures lik
 
 ## ToDo-List
 
-- [ ] Get usernames from Resonite API and add as tags
-- [ ] Support for saved image-grabbers/slurpers
+- [x] Support for oxibooru categories
 - [x] Remove tags, that are only used once
   - Limit Timestamp to Hours
   - texture_asset
+- [ ] Get usernames from Resonite API and add as tags
+- [ ] Split code into modular system to support more export methods
+- [ ] Support for oxibooru pools and group events together some way.
+- [ ] Support for saved image-grabbers/slurpers
 - [ ] Consolidate tags in Oxibooru
   - UserIds with usernames
   - session with and without prefix
