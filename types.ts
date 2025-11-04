@@ -1,4 +1,4 @@
-type userId = `U-${string}`;
+export type userId = `U-${string}`;
 
 export type safetyLevels = 'safe' | 'sketchy' | 'unsafe'
 
@@ -44,6 +44,18 @@ export type validatePostResponse = {
   exactPost: null | string;
   similarPosts: string[];
 };
+
+export type getTagResponse = {
+  version: Date;
+  description: string;
+  creationTime: Date;
+  lastEditTime: Date;
+  category: string;
+  names: string[];
+  implications: string[];
+  suggestions: string[];
+  usages: string;
+}
 
 export type getTagCategoriesResponse = {
   results: {

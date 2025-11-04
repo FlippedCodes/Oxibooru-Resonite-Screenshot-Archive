@@ -12,11 +12,14 @@ import type {
   validatePostResponse,
   safetyLevels,
   getTagCategoriesResponse,
+  getTagResponse,
+  userId,
 } from './types';
 
 import { HTTPMethodOxibooru } from './types';
 
 import config from './config.json';
+import { version } from 'os';
 
 // #region get userToken
 async function authenticateWithResonite(
@@ -210,6 +213,8 @@ const oxibooruFunctions: oxibooruFunctionTypes = {
   getTagCategories: { method: HTTPMethodOxibooru.get, endpoint: 'tag-categories/' },
   createTagCategory: { method: HTTPMethodOxibooru.post, endpoint: 'tag-categories/' },
   updateTagCategory: { method: HTTPMethodOxibooru.put, endpoint: 'tag-category/' },
+  getTag: { method: HTTPMethodOxibooru.get, endpoint: 'tag/' },
+  updateTag: { method: HTTPMethodOxibooru.put, endpoint: 'tag/' },
 } as const;
 
 async function oxibooru(
@@ -235,15 +240,15 @@ async function oxibooru(
 if (config.oxibooru.useCategories) {
   const configTagCategories = Object.entries(config.oxibooru.categories).map((e) => e[1]);
   const currentTagCategories = (await oxibooru(
-oxibooruFunctions.getTagCategories!,
-undefined,
-undefined
+    oxibooruFunctions.getTagCategories!,
+    undefined,
+    undefined
   )) as getTagCategoriesResponse;
   await configTagCategories.forEach(async (configCategoryName, i) => {
     // check, if category was created
     const foundEntry = currentTagCategories.results.find(
-(category) => category.name === configCategoryName
-);
+      (category) => category.name === configCategoryName
+    );
     if (!foundEntry) {
       const output = await oxibooru(oxibooruFunctions.createTagCategory!, undefined, {
         name: configCategoryName,
@@ -268,77 +273,148 @@ async function deleteResoniteRecord(record: resoniteInventoryRecord, i: number) 
   });
 }
 
-  // clear out nulled records.
+// clear out nulled records.
 const assetRecordsClean = assetRecords.filter((out) => out !== null);
 
 await assetRecordsClean.forEach(async (record, i) => {
-    // upload file
-    const contentToken = (await oxibooru(oxibooruFunctions.uploadPost!, undefined, {
-      contentUrl: record.assetURL,
-    })) as uploadPostResponse;
-    if (!contentToken) return console.warn('Issue with uploading ', record.assetURL);
-    const validatePostResp = (await oxibooru(oxibooruFunctions.validatePost!, undefined, {
-      contentToken: contentToken.token,
-    })) as validatePostResponse;
-    if (validatePostResp.exactPost !== null) return deleteResoniteRecord(record, i);
+  // upload file
+  const contentToken = (await oxibooru(oxibooruFunctions.uploadPost!, undefined, {
+    contentUrl: record.assetURL,
+  })) as uploadPostResponse;
+  if (!contentToken) return console.warn('Issue with uploading ', record.assetURL);
+  const validatePostResp = (await oxibooru(oxibooruFunctions.validatePost!, undefined, {
+    contentToken: contentToken.token,
+  })) as validatePostResponse;
+  if (validatePostResp.exactPost !== null) return deleteResoniteRecord(record, i);
 
-    // sanitize default tags
-    const defaultTags = record.tags.map((tag) => tag.replace(/<[^>]+>/g, ''));
-    [
-      record.photoMetadata.location.name.toLowerCase(),
-      defaultTags.find((tag) => tag.startsWith('texture_asset')) || '',
-      defaultTags.find((tag) => tag.startsWith('timestamp')) || '',
-      defaultTags.find((tag) => tag.startsWith('location_accesslevel')) || '',
-      defaultTags.find((tag) => tag.startsWith('location_hiddenfromlisting')) || '',
-      defaultTags.find((tag) => tag.startsWith('location_host')) || '',
-      defaultTags.find((tag) => tag.startsWith('location_name')) || '',
-      'in',
-    ].forEach((removeTag) => {
-      const removeIndex = defaultTags.indexOf(removeTag);
-      if (removeIndex !== -1) defaultTags.splice(removeIndex, 1);
-    });
-
-    // get all data and put into array for tags
-    const tags = [
-      ...defaultTags,
-      ...record.photoMetadata.userIds,
-            `savedBy:${record.ownerId}`,
-      record.photoMetadata.location.name,
-      `sessionName:${record.photoMetadata.location.name}`,
-            `host:${record.photoMetadata.location.host}`,
-      record.photoMetadata.location.accessLevel,
-      `accessLevel:${record.photoMetadata.location.accessLevel}`,
-      record.photoMetadata.location.hiddenFromListing ? 'hiddenSession' : null,
-      `takenBy:${record.photoMetadata.takenBy}`,
-      record.photoMetadata.timeTaken.toISOString().split('T')[0],
-      appVersion,
-      record.photoMetadata.appVersion,
-      // check if modded app-version is set
-      record.photoMetadata.appVersion.includes('+')
-        ? record.photoMetadata.appVersion.split('+')[0]!
-        : null,
-    ]
-      .filter((tag) => tag)
-      .map((tag) => tag?.replaceAll(' ', '_'));
-
-    // get safety level
-    let safety: safetyLevels = 'safe';
-    // order is important
-    if (record.photoMetadata.location.accessLevel === 'FriendsOfFriends') safety = 'sketchy';
-    if (record.photoMetadata.location.accessLevel === 'Contacts') safety = 'unsafe';
-    if (record.photoMetadata.location.accessLevel === 'Private') safety = 'unsafe';
-    if (record.photoMetadata.location.hiddenFromListing === true) safety = 'unsafe';
-
-    // create post from tags
-    const post = await oxibooru(oxibooruFunctions.createPost!, undefined, {
-      // new Set deduplicated tags
-      tags: [...new Set(tags)],
-      contentToken: contentToken.token,
-      source: record.assetURL,
-      safety,
-    });
-    // delete resonite image if picture was added successfully
-    if (post) deleteResoniteRecord(record, i);
+  // sanitize default tags
+  const defaultTags = record.tags.map((tag) => tag.replace(/<[^>]+>/g, ''));
+  [
+    record.photoMetadata.location.name.toLowerCase(),
+    defaultTags.find((tag) => tag.startsWith('texture_asset')) || '',
+    defaultTags.find((tag) => tag.startsWith('timestamp')) || '',
+    defaultTags.find((tag) => tag.startsWith('location_accesslevel')) || '',
+    defaultTags.find((tag) => tag.startsWith('location_hiddenfromlisting')) || '',
+    defaultTags.find((tag) => tag.startsWith('location_host')) || '',
+    defaultTags.find((tag) => tag.startsWith('location_name')) || '',
+    'in',
+  ].forEach((removeTag) => {
+    const removeIndex = defaultTags.indexOf(removeTag);
+    if (removeIndex !== -1) defaultTags.splice(removeIndex, 1);
   });
+
+  // get all data and put into array for tags
+  const tags = [
+    ...defaultTags,
+    ...record.photoMetadata.userIds,
+    `savedBy:${record.ownerId}`,
+    record.photoMetadata.location.name,
+    `sessionName:${record.photoMetadata.location.name}`,
+    `host:${record.photoMetadata.location.host}`,
+    record.photoMetadata.location.accessLevel,
+    `accessLevel:${record.photoMetadata.location.accessLevel}`,
+    record.photoMetadata.location.hiddenFromListing ? 'hiddenSession' : null,
+    `takenBy:${record.photoMetadata.takenBy}`,
+    record.photoMetadata.timeTaken.toISOString().split('T')[0],
+    appVersion,
+    record.photoMetadata.appVersion,
+    // check if modded app-version is set
+    record.photoMetadata.appVersion.includes('+')
+      ? record.photoMetadata.appVersion.split('+')[0]!
+      : null,
+  ]
+    .filter((tag) => tag)
+    .map((tag) => tag?.replaceAll(' ', '_'));
+
+  // get safety level
+  let safety: safetyLevels = 'safe';
+  // order is important
+  if (record.photoMetadata.location.accessLevel === 'FriendsOfFriends') safety = 'sketchy';
+  if (record.photoMetadata.location.accessLevel === 'Contacts') safety = 'unsafe';
+  if (record.photoMetadata.location.accessLevel === 'Private') safety = 'unsafe';
+  if (record.photoMetadata.location.hiddenFromListing === true) safety = 'unsafe';
+
+  // create post from tags
+  const post = await oxibooru(oxibooruFunctions.createPost!, undefined, {
+    // new Set deduplicated tags
+    tags: [...new Set(tags)],
+    contentToken: contentToken.token,
+    source: record.assetURL,
+    safety,
+  });
+  // delete resonite image if picture was added successfully
+  if (post) deleteResoniteRecord(record, i);
+});
 // #endregion
 
+// #region Update tag category
+if (!config.oxibooru.useCategories) process.exit();
+const sortedTags = {
+  // TODO: POC! Has to be made the default and then broken down again on post-creation. not the other way around.
+  users: await assetRecordsClean.flatMap((record) => record.photoMetadata.userIds),
+  host: await assetRecordsClean.flatMap((record) => `host:${record.photoMetadata.location.host}`),
+  accessLevel: await assetRecordsClean.flatMap((record) => [
+    `accessLevel:${record.photoMetadata.location.accessLevel}`,
+    record.photoMetadata.location.accessLevel,
+  ]),
+  savedBy: await assetRecordsClean.flatMap((record) => `savedBy:${record.ownerId}`),
+  takenBy: await assetRecordsClean.flatMap((record) => `takenBy:${record.photoMetadata.takenBy}`),
+  sessionName: await assetRecordsClean.flatMap((record) => [
+    `sessionName:${record.photoMetadata.location.name}`,
+    record.photoMetadata.location.name,
+  ]),
+  hidden: ['hiddenSession'],
+  dateTaken: await assetRecordsClean.flatMap(
+    (record) => record.photoMetadata.timeTaken.toISOString().split('T')[0]
+  ),
+  importerVersion: [appVersion],
+  gameVersion: await assetRecordsClean.flatMap((record) => [
+    record.photoMetadata.appVersion,
+    // check if modded app-version is set
+    record.photoMetadata.appVersion.includes('+')
+      ? record.photoMetadata.appVersion.split('+')[0]!
+      : null,
+  ]),
+};
+const isCategorySet = (categoryName: string) =>
+  Object.keys(config.oxibooru.categories).find((configName) => configName === categoryName);
+
+const categories = config.oxibooru.categories;
+// FIXME: want to use typeof categories, but im stoopid
+function updateCategoryTags(tags: string[] | userId[], category: string) {
+  new Set(tags).forEach(async (tag) => {
+    const sanitizedTag = tag?.replaceAll(' ', '_');
+    const foundTag = (await oxibooru(
+      oxibooruFunctions.getTag!,
+      sanitizedTag,
+      undefined
+    )) as getTagResponse;
+    if (!foundTag) return console.warn(`Unable to find tag ${sanitizedTag} to update category.`);
+    if (foundTag.category === category) return;
+    oxibooru(oxibooruFunctions.updateTag!, sanitizedTag, { category, version: foundTag.version });
+  });
+}
+
+if (isCategorySet('users')) updateCategoryTags(sortedTags.users, categories.users);
+if (isCategorySet('host')) updateCategoryTags(sortedTags.host, categories.host);
+if (isCategorySet('accessLevel'))
+  updateCategoryTags(sortedTags.accessLevel, categories.accessLevel);
+if (isCategorySet('savedBy')) updateCategoryTags(sortedTags.savedBy, categories.savedBy);
+if (isCategorySet('sessionName'))
+  updateCategoryTags(sortedTags.sessionName, categories.sessionName);
+if (isCategorySet('hidden')) updateCategoryTags(sortedTags.hidden, categories.hidden);
+if (isCategorySet('takenBy')) updateCategoryTags(sortedTags.takenBy, categories.takenBy);
+if (isCategorySet('dateTaken'))
+  updateCategoryTags(
+    sortedTags.dateTaken.filter((e) => e !== undefined),
+    categories.dateTaken
+  );
+if (isCategorySet('importerVersion'))
+  updateCategoryTags(sortedTags.importerVersion, categories.importerVersion);
+if (isCategorySet('gameVersion'))
+  updateCategoryTags(
+    sortedTags.gameVersion.filter((e) => e !== null),
+    categories.gameVersion
+  );
+
+// #endregion
