@@ -231,20 +231,26 @@ async function oxibooru(
 }
 // #endregion
 
-// #region Update tag category
+// #region Update categories
 if (config.oxibooru.useCategories) {
   const configTagCategories = Object.entries(config.oxibooru.categories).map((e) => e[1]);
-  const currentTagCategories = await oxibooru(oxibooruFunctions.getTagCategories!, undefined, undefined) as getTagCategoriesResponse;
+  const currentTagCategories = (await oxibooru(
+oxibooruFunctions.getTagCategories!,
+undefined,
+undefined
+  )) as getTagCategoriesResponse;
   await configTagCategories.forEach(async (configCategoryName, i) => {
     // check, if category was created
-    const foundEntry = currentTagCategories.results.find((category) => category.name === configCategoryName);
+    const foundEntry = currentTagCategories.results.find(
+(category) => category.name === configCategoryName
+);
     if (!foundEntry) {
       const output = await oxibooru(oxibooruFunctions.createTagCategory!, undefined, {
-        name:  configCategoryName,
+        name: configCategoryName,
         color: 'default',
-        order: i
+        order: i,
       });
-      if (!output) throw new Error('Couldn\'t create a category.');
+      if (!output) throw new Error("Couldn't create a category.");
       return;
     }
   });
