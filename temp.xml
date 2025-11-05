@@ -1,0 +1,37 @@
+<canvas width="400" height="500" background="#11151D">
+  <vertical spacing="10">
+    <text fontsize="25">Inside Insight Stats</text>
+    <horizontal >
+      <usericon ></usericon>
+      <vertical>
+        <text fontsize="15">Username</text>
+        <text fontsize="15">Predit Score: 0000</text>
+        <text fontsize="15">Status: Hungry</text>
+      </vertical>
+    </horizontal>
+    <horizontal spacing="10" minheight="50">
+      <vertical>
+        <text fontsize="20">Prey</text>
+        <overlapping>
+          <box minheight="50"></box>
+          <scroll>
+            <text fontsize="15">Maw: </text>
+            <text fontsize="15">Belly:</text>
+            <text fontsize="15">Bowels:</text>
+            <text fontsize="15">Balls:</text>
+          </scroll>
+        </overlapping>
+      </vertical>
+      <vertical>
+        <text fontsize="20">Pred</text>
+        <scroll>
+          <text fontsize="15">Maw: </text>
+          <text fontsize="15">Belly:</text>
+          <text fontsize="15">Bowels:</text>
+          <text fontsize="15">Balls:</text>
+        </scroll>
+      </vertical>
+    </horizontal>
+    <button color="#3584e4" fontsize="12" minheight="18">Load my stats</button>
+  </vertical>
+</canvas>
