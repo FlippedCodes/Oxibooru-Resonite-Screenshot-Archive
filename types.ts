@@ -57,6 +57,47 @@ export type getTagResponse = {
   usages: string;
 }
 
+export type getTagSearchResponse = {
+  query: string;
+  offset: number;
+  limit: number;
+  total: number;
+  results: {
+    version?: Date;
+    description?: string;
+    creationTime?: Date;
+    lastEditTime?: Date;
+    category?: string;
+    names: string[];
+    implications?: string[];
+    suggestions?: string[];
+    usages?: string;
+  }[];
+}
+
+export type getPostSearchResponse = {
+  query: string;
+  offset: number;
+  limit: number;
+  total: number;
+  results: {
+    version?: Date;
+    description?: string;
+    creationTime?: Date;
+    lastEditTime?: Date;
+    category?: string;
+    tags?: {
+      names: string[];
+      category: string;
+      usages: number;
+    }[];
+    id?: number;
+    implications?: string[];
+    suggestions?: string[];
+    usages?: string;
+  }[];
+}
+
 export type getTagCategoriesResponse = {
   results: {
     version: Date;

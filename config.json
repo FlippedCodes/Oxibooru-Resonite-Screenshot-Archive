@@ -18,6 +18,7 @@
     "dangerSettings": "READ DOCS BEFORE TOUCHING!",
     "deleteSourcePictures": false,
     "useCategories": true,
+    "useLegacyMigrations": true,
     "categories": {
       "users": "User",
       "host": "SessionHost",

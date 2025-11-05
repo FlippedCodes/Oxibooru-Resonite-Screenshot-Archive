@@ -14,6 +14,8 @@ import type {
   getTagCategoriesResponse,
   getTagResponse,
   userId,
+  getTagSearchResponse,
+  getPostSearchResponse,
 } from './types';
 
 import { HTTPMethodOxibooru } from './types';
@@ -210,11 +212,15 @@ const oxibooruFunctions: oxibooruFunctionTypes = {
   uploadPost: { method: HTTPMethodOxibooru.post, endpoint: 'uploads/' },
   validatePost: { method: HTTPMethodOxibooru.post, endpoint: 'posts/reverse-search/' },
   createPost: { method: HTTPMethodOxibooru.post, endpoint: 'posts/' },
+  searchPosts: { method: HTTPMethodOxibooru.get, endpoint: 'posts/' },
+  updatePost: { method: HTTPMethodOxibooru.put, endpoint: 'post/' },
   getTagCategories: { method: HTTPMethodOxibooru.get, endpoint: 'tag-categories/' },
   createTagCategory: { method: HTTPMethodOxibooru.post, endpoint: 'tag-categories/' },
   updateTagCategory: { method: HTTPMethodOxibooru.put, endpoint: 'tag-category/' },
+  searchTags: { method: HTTPMethodOxibooru.get, endpoint: 'tags/' },
   getTag: { method: HTTPMethodOxibooru.get, endpoint: 'tag/' },
   updateTag: { method: HTTPMethodOxibooru.put, endpoint: 'tag/' },
+  deleteTag: { method: HTTPMethodOxibooru.delete, endpoint: 'tag/' },
 } as const;
 
 async function oxibooru(
@@ -416,5 +422,51 @@ if (isCategorySet('gameVersion'))
     sortedTags.gameVersion.filter((e) => e !== null),
     categories.gameVersion
   );
+// #endregion
 
+// #region Legacy migrations
+// This is a hack! Only needed to cleanup previous posts and will be deleted after.
+if (!config.oxibooru.useLegacyMigrations) process.exit();
+if (!config.oxibooru.useCategories) console.warn("useCategories has to be true for migrating tags to categories.");
+
+// update legacy timestamps
+const legacyTimestamps = await oxibooru(oxibooruFunctions.searchTags!, `?${new URLSearchParams({ query:'timestamp\\:*', limit: '200', fields: 'names,version' })}`, undefined) as getTagSearchResponse;
+if (legacyTimestamps && legacyTimestamps.results) {
+  legacyTimestamps.results.forEach(async (timestamp) => {
+    const date = timestamp.names[0]?.replace('timestamp:', '').split('T')[0];
+    if (!date) return;
+    const oldTimestamp = timestamp.names[0]?.replaceAll(':', '\\:').replaceAll('.', '\\.');
+    const posts = await oxibooru(oxibooruFunctions.searchPosts!, `?${new URLSearchParams({ query: `${oldTimestamp}`, limit: '200', fields: 'version,id,tags' })}`, undefined) as getPostSearchResponse;
+    if (posts && posts.results) {
+      posts.results.forEach(async (post) => {
+        const tags = post.tags?.map((tag) => tag.names[0]);
+        if (!tags) return;
+        const successfulUpdate = await oxibooru(oxibooruFunctions.updatePost!, `${post.id}`, { tags: [...tags, date], version: post.version })
+        if (!successfulUpdate) return;
+        await oxibooru(oxibooruFunctions.deleteTag!, timestamp.names[0], { version: timestamp.version })
+      })
+    }
+  });
+}
+
+// remove texture_asset tags
+const textureAssetTags = await oxibooru(oxibooruFunctions.searchTags!, `?${new URLSearchParams({ query:'texture_asset\\*', limit: '200', fields: 'names,version' })}`, undefined) as getTagSearchResponse;
+if (textureAssetTags && textureAssetTags.results) textureAssetTags.results.forEach((tag) => {
+  oxibooru(oxibooruFunctions.deleteTag!, encodeURIComponent(tag.names[0]!), { version: tag.version })
+});
+
+// all migrations below require the category feature to be enabled.
+if (!config.oxibooru.useCategories) process.exit();
+
+// update legacy user categories
+const legacyUsers = await oxibooru(oxibooruFunctions.searchTags!, `?${new URLSearchParams({ query:'U-* -category:User', limit: '200', fields: 'names' })}`, undefined) as getTagSearchResponse;
+if (legacyUsers && legacyUsers.results) updateCategoryTags(legacyUsers.results.map((tag) => tag.names[0]).filter((e) => e !== undefined), categories.users);
+
+// update date and game version categories
+for (let i = 0; i < 3; i++) {
+  const dates = await oxibooru(oxibooruFunctions.searchTags!, `?${new URLSearchParams({ query:`${new Date().getFullYear() - i}-*-*`, limit: '200', fields: 'names' })}`, undefined) as getTagSearchResponse;
+  if (dates && dates.results) updateCategoryTags(dates.results.map((tag) => tag.names[0]).filter((e) => e !== undefined), categories.dateTaken);
+  const gameVersions = await oxibooru(oxibooruFunctions.searchTags!, `?${new URLSearchParams({ query:`${new Date().getFullYear() - i}.*.*.*`, limit: '200', fields: 'names' })}`, undefined) as getTagSearchResponse;
+  if (gameVersions && gameVersions.results) updateCategoryTags(gameVersions.results.map((tag) => tag.names[0]).filter((e) => e !== undefined), categories.gameVersion);
+}
 // #endregion
