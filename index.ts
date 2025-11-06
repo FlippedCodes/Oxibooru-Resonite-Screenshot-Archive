@@ -427,24 +427,42 @@ if (isCategorySet('gameVersion'))
 // #region Legacy migrations
 // This is a hack! Only needed to cleanup previous posts and will be deleted after.
 if (!config.oxibooru.useLegacyMigrations) process.exit();
-if (!config.oxibooru.useCategories) console.warn("useCategories has to be true for migrating tags to categories.");
+if (!config.oxibooru.useCategories)
+console.warn('useCategories has to be true for migrating tags to categories.');
 
 // update legacy timestamps
-const legacyTimestamps = await oxibooru(oxibooruFunctions.searchTags!, `?${new URLSearchParams({ query:'timestamp\\:*', limit: '200', fields: 'names,version' })}`, undefined) as getTagSearchResponse;
+const legacyTimestamps = (await oxibooru(
+oxibooruFunctions.searchTags!,
+`?${new URLSearchParams({ query: 'timestamp\\:*', limit: '200', fields: 'names,version' })}`,
+undefined
+)) as getTagSearchResponse;
 if (legacyTimestamps && legacyTimestamps.results) {
   legacyTimestamps.results.forEach(async (timestamp) => {
     const date = timestamp.names[0]?.replace('timestamp:', '').split('T')[0];
     if (!date) return;
     const oldTimestamp = timestamp.names[0]?.replaceAll(':', '\\:').replaceAll('.', '\\.');
-    const posts = await oxibooru(oxibooruFunctions.searchPosts!, `?${new URLSearchParams({ query: `${oldTimestamp}`, limit: '200', fields: 'version,id,tags' })}`, undefined) as getPostSearchResponse;
+    const posts = (await oxibooru(
+oxibooruFunctions.searchPosts!,
+`?${new URLSearchParams({
+query: `${oldTimestamp}`,
+limit: '200',
+fields: 'version,id,tags',
+})}`,
+undefined
+    )) as getPostSearchResponse;
     if (posts && posts.results) {
       posts.results.forEach(async (post) => {
         const tags = post.tags?.map((tag) => tag.names[0]);
         if (!tags) return;
-        const successfulUpdate = await oxibooru(oxibooruFunctions.updatePost!, `${post.id}`, { tags: [...tags, date], version: post.version })
+        const successfulUpdate = await oxibooru(oxibooruFunctions.updatePost!, `${post.id}`, {
+tags: [...tags, date],
+version: post.version,
+        });
         if (!successfulUpdate) return;
-        await oxibooru(oxibooruFunctions.deleteTag!, timestamp.names[0], { version: timestamp.version })
-      })
+        await oxibooru(oxibooruFunctions.deleteTag!, timestamp.names[0], {
+version: timestamp.version,
+        });
+      });
     }
   });
 }
