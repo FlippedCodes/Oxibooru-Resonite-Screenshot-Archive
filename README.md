@@ -80,7 +80,7 @@ I use both for other projects felt a booru is the best way to store pictures lik
 - [x] Remove tags, that are only used once
   - Limit Timestamp to Hours
   - texture_asset
-- [ ] Get usernames from Resonite API and add as tags
+- [x] Get usernames from Resonite API and add as tags
 - [ ] Split code into modular system to support more export methods
 - [ ] Support for saved image-grabbers/slurpers
 - Oxibooru specific
