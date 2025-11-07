@@ -426,13 +426,13 @@ if (isCategorySet('gameVersion'))
 // This is a hack! Only needed to cleanup previous posts and will be deleted after.
 if (!config.oxibooru.useLegacyMigrations) process.exit();
 if (!config.oxibooru.useCategories)
-console.warn('useCategories has to be true for migrating tags to categories.');
+  console.warn('useCategories has to be true for migrating tags to categories.');
 
 // update legacy timestamps
 const legacyTimestamps = (await oxibooru(
-oxibooruFunctions.searchTags!,
-`?${new URLSearchParams({ query: 'timestamp\\:*', limit: '200', fields: 'names,version' })}`,
-undefined
+  oxibooruFunctions.searchTags!,
+  `?${new URLSearchParams({ query: 'timestamp\\:*', limit: '200', fields: 'names,version' })}`,
+  undefined
 )) as getTagSearchResponse;
 if (legacyTimestamps && legacyTimestamps.results) {
   legacyTimestamps.results.forEach(async (timestamp) => {
@@ -440,25 +440,25 @@ if (legacyTimestamps && legacyTimestamps.results) {
     if (!date) return;
     const oldTimestamp = timestamp.names[0]?.replaceAll(':', '\\:').replaceAll('.', '\\.');
     const posts = (await oxibooru(
-oxibooruFunctions.searchPosts!,
-`?${new URLSearchParams({
-query: `${oldTimestamp}`,
-limit: '200',
-fields: 'version,id,tags',
-})}`,
-undefined
+      oxibooruFunctions.searchPosts!,
+      `?${new URLSearchParams({
+        query: `${oldTimestamp}`,
+        limit: '200',
+        fields: 'version,id,tags',
+      })}`,
+      undefined
     )) as getPostSearchResponse;
     if (posts && posts.results) {
       posts.results.forEach(async (post) => {
         const tags = post.tags?.map((tag) => tag.names[0]);
         if (!tags) return;
         const successfulUpdate = await oxibooru(oxibooruFunctions.updatePost!, `${post.id}`, {
-tags: [...tags, date],
-version: post.version,
+          tags: [...tags, date],
+          version: post.version,
         });
         if (!successfulUpdate) return;
         await oxibooru(oxibooruFunctions.deleteTag!, timestamp.names[0], {
-version: timestamp.version,
+          version: timestamp.version,
         });
       });
     }
@@ -466,10 +466,17 @@ version: timestamp.version,
 }
 
 // remove texture_asset tags
-const textureAssetTags = await oxibooru(oxibooruFunctions.searchTags!, `?${new URLSearchParams({ query:'texture_asset\\*', limit: '200', fields: 'names,version' })}`, undefined) as getTagSearchResponse;
-if (textureAssetTags && textureAssetTags.results) textureAssetTags.results.forEach((tag) => {
-  oxibooru(oxibooruFunctions.deleteTag!, encodeURIComponent(tag.names[0]!), { version: tag.version })
-});
+const textureAssetTags = (await oxibooru(
+  oxibooruFunctions.searchTags!,
+  `?${new URLSearchParams({ query: 'texture_asset\\*', limit: '200', fields: 'names,version' })}`,
+  undefined
+)) as getTagSearchResponse;
+if (textureAssetTags && textureAssetTags.results)
+  textureAssetTags.results.forEach((tag) => {
+    oxibooru(oxibooruFunctions.deleteTag!, encodeURIComponent(tag.names[0]!), {
+      version: tag.version,
+    });
+  });
 
 // get usernames
 // FIXME: the limit is a hack, it has to be replaced with a better way of selecting users that have not been updates. maybe separate the api call into users that are not part of the category yet and need immediate updating and another for when the last edit is longer then "refreshUsernamesInMonths"
@@ -514,14 +521,46 @@ if (users && users.results) {
 if (!config.oxibooru.useCategories) process.exit();
 
 // update legacy user categories
-const legacyUsers = await oxibooru(oxibooruFunctions.searchTags!, `?${new URLSearchParams({ query:'U-* -category:User', limit: '200', fields: 'names' })}`, undefined) as getTagSearchResponse;
-if (legacyUsers && legacyUsers.results) updateCategoryTags(legacyUsers.results.map((tag) => tag.names[0]).filter((e) => e !== undefined), categories.users);
+const legacyUsers = (await oxibooru(
+  oxibooruFunctions.searchTags!,
+  `?${new URLSearchParams({ query: 'U-* -category:User', limit: '200', fields: 'names' })}`,
+  undefined
+)) as getTagSearchResponse;
+if (legacyUsers && legacyUsers.results)
+  updateCategoryTags(
+    legacyUsers.results.map((tag) => tag.names[0]).filter((e) => e !== undefined),
+    categories.users
+  );
 
 // update date and game version categories
 for (let i = 0; i < 3; i++) {
-  const dates = await oxibooru(oxibooruFunctions.searchTags!, `?${new URLSearchParams({ query:`${new Date().getFullYear() - i}-*-*`, limit: '200', fields: 'names' })}`, undefined) as getTagSearchResponse;
-  if (dates && dates.results) updateCategoryTags(dates.results.map((tag) => tag.names[0]).filter((e) => e !== undefined), categories.dateTaken);
-  const gameVersions = await oxibooru(oxibooruFunctions.searchTags!, `?${new URLSearchParams({ query:`${new Date().getFullYear() - i}.*.*.*`, limit: '200', fields: 'names' })}`, undefined) as getTagSearchResponse;
-  if (gameVersions && gameVersions.results) updateCategoryTags(gameVersions.results.map((tag) => tag.names[0]).filter((e) => e !== undefined), categories.gameVersion);
+  const dates = (await oxibooru(
+    oxibooruFunctions.searchTags!,
+    `?${new URLSearchParams({
+      query: `${new Date().getFullYear() - i}-*-*`,
+      limit: '200',
+      fields: 'names',
+    })}`,
+    undefined
+  )) as getTagSearchResponse;
+  if (dates && dates.results)
+    updateCategoryTags(
+      dates.results.map((tag) => tag.names[0]).filter((e) => e !== undefined),
+      categories.dateTaken
+    );
+  const gameVersions = (await oxibooru(
+    oxibooruFunctions.searchTags!,
+    `?${new URLSearchParams({
+      query: `${new Date().getFullYear() - i}.*.*.*`,
+      limit: '200',
+      fields: 'names',
+    })}`,
+    undefined
+  )) as getTagSearchResponse;
+  if (gameVersions && gameVersions.results)
+    updateCategoryTags(
+      gameVersions.results.map((tag) => tag.names[0]).filter((e) => e !== undefined),
+      categories.gameVersion
+    );
 }
 // #endregion
