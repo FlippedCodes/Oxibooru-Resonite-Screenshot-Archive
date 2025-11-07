@@ -21,7 +21,6 @@ import type {
 import { HTTPMethodOxibooru } from './types';
 
 import config from './config.json';
-import { version } from 'os';
 
 // #region get userToken
 async function authenticateWithResonite(
