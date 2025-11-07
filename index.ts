@@ -16,6 +16,7 @@ import type {
   userId,
   getTagSearchResponse,
   getPostSearchResponse,
+  resoniteUserRecord,
 } from './types';
 
 import { HTTPMethodOxibooru } from './types';
@@ -469,6 +470,45 @@ const textureAssetTags = await oxibooru(oxibooruFunctions.searchTags!, `?${new U
 if (textureAssetTags && textureAssetTags.results) textureAssetTags.results.forEach((tag) => {
   oxibooru(oxibooruFunctions.deleteTag!, encodeURIComponent(tag.names[0]!), { version: tag.version })
 });
+
+// get usernames
+// FIXME: the limit is a hack, it has to be replaced with a better way of selecting users that have not been updates. maybe separate the api call into users that are not part of the category yet and need immediate updating and another for when the last edit is longer then "refreshUsernamesInMonths"
+const users = (await oxibooru(
+  oxibooruFunctions.searchTags!,
+  `?${new URLSearchParams({ query: 'U-*', limit: '1000', fields: 'names,version,lastEditTime' })}`,
+  undefined
+)) as getTagSearchResponse;
+if (users && users.results) {
+  users.results.forEach(async (user) => {
+    const lastChecked = new Date().getTime() - new Date(user.lastEditTime!).getTime();
+    const refreshUsernamesInMonths = config.oxibooru.refreshUsernamesInMonths * 2.628e9;
+    if (user.names.length !== 1 && lastChecked < refreshUsernamesInMonths) return;
+    const userId = user.names.find((tag) => tag.startsWith('U-'));
+    if (!userId) return;
+    const userRecordRaw = await fetch(`https://api.resonite.com/users/${userId}`, {
+      headers: { Authorization },
+    });
+    if (!userRecordRaw.ok) {
+      console.warn(userRecordRaw.statusText, await userRecordRaw.text(), { user });
+      return null;
+    }
+    const userRecord = (await userRecordRaw.json()) as resoniteUserRecord;
+    if (!(userRecord && userRecord.username)) return;
+    const names = user.names;
+    names.unshift(userRecord.username.replaceAll(' ', '_'));
+    if (user.names.includes('U-SiderealScout')) {
+      return
+    }
+    const description = userRecord.profile
+      ? `<img src="${getAssetURL(userRecord.profile.iconUrl)}">`
+      : null;
+    oxibooru(oxibooruFunctions.updateTag!, userId, {
+      names: [...new Set(names)],
+      version: user.version,
+      description,
+    });
+  });
+}
 
 // all migrations below require the category feature to be enabled.
 if (!config.oxibooru.useCategories) process.exit();

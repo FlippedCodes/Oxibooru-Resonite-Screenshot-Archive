@@ -128,3 +128,11 @@ export type resoniteInventoryRecord = {
     camera: camera;
   };
 };
+
+export type resoniteUserRecord = {
+  id: userId;
+  username: string;
+  profile: {
+    iconUrl: `resdb:///${string}`;
+  };
+} | null;

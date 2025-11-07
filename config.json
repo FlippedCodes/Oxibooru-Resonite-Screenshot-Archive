@@ -15,6 +15,7 @@
     ]
   },
   "oxibooru": {
+    "refreshUsernamesInMonths": 2,
     "dangerSettings": "READ DOCS BEFORE TOUCHING!",
     "deleteSourcePictures": false,
     "useCategories": true,
