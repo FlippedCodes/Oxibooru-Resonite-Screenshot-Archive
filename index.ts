@@ -94,6 +94,9 @@ if (authResult.requiresTOTP) {
 // #endregion
 
 // #region get scr records
+const getAssetURL = (resdbUri: string) =>
+  resdbUri.replace(/\.[^.]+$/, '').replace(/^@?resdb:\/\/\//, 'https://assets.resonite.com/');
+
 const recordsRaw = await fetch(
   `https://api.resonite.com/users/${tokenBody.entity.userId}/records?path=${config.resonite.photoLocation}`,
   { headers: { Authorization } }
@@ -108,9 +111,7 @@ const downloadRecords = baseRecords
   .filter((record) => record.name.startsWith('Photo in '))
   .map((record) => {
     const outRecord = record;
-    outRecord.assetURL = record
-      .assetUri!.replace('resdb:///', 'https://assets.resonite.com/')
-      .replace(/\.brson$/, '');
+    outRecord.assetURL = getAssetURL(record.assetUri!);
     return outRecord;
   });
 // #endregion
@@ -163,10 +164,7 @@ const assetRecords = await Promise.all(
     if (!photoMetadata || !staticTexture2D) {
       throw new Error(`Not a known image system or not a screenshot. ${outRecord}`);
     }
-    outRecord.assetURL = staticTexture2D.Data.URL.Data.replace(/\.[^.]+$/, '').replace(
-      '@resdb:///',
-      'https://assets.resonite.com/'
-    );
+    outRecord.assetURL = getAssetURL(staticTexture2D.Data.URL.Data);
 
     // cleanup dataset
     outRecord.photoMetadata = {
