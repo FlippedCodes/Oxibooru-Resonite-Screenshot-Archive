@@ -167,6 +167,9 @@ const assetRecords = await Promise.all(
     }
     outRecord.assetURL = getAssetURL(staticTexture2D.Data.URL.Data);
 
+    // FIXME: Hotfix: Skipping records that don't have the metadata filled out.
+    if (photoMetadata.Data.LocationName.Data === null) return null;
+
     // cleanup dataset
     outRecord.photoMetadata = {
       location: {
@@ -503,9 +506,6 @@ if (users && users.results) {
     if (!(userRecord && userRecord.username)) return;
     const names = user.names;
     names.unshift(userRecord.username.replaceAll(' ', '_'));
-    if (user.names.includes('U-SiderealScout')) {
-      return
-    }
     const description = userRecord.profile
       ? `<img src="${getAssetURL(userRecord.profile.iconUrl)}">`
       : null;
