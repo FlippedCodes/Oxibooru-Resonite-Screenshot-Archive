@@ -35,6 +35,9 @@ Froox Example             |  Phil Example
 
 ### Usage
 
+> [!WARNING]
+> Folders with more then 250 Pictures will cause the Resonite API to rate limit the script. It's recommended to not import more then 200 pictures at the time.
+
 You can run the script by running `bun start`.
 
 When you made sure it ran smoothly and all pictures are in the booru, you can re-run it with `deleteSourcePictures` set to `true`.
