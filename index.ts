@@ -18,9 +18,7 @@ import type {
   getPostSearchResponse,
   resoniteUserRecord,
 } from './types';
-
 import { HTTPMethodOxibooru } from './types';
-
 import config from './config.json';
 
 // #region get userToken
