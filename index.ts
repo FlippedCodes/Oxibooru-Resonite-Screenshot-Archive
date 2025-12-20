@@ -178,7 +178,7 @@ const assetRecords = await Promise.all(
       },
       timeTaken: photoMetadata.Data.TimeTaken.Data,
       takenBy: photoMetadata.Data.TakenBy._userId.Data,
-      appVersion: photoMetadata.Data.AppVersion.Data,
+      appVersion: photoMetadata.Data.AppVersion.Data || '',
       userIds: photoMetadata.Data.UserInfos.Data.map((u: any) => u.User._userId.Data),
       camera: {
         FOV: photoMetadata.Data.CameraFOV.Data,
