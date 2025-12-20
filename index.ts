@@ -20,6 +20,7 @@ import type {
 } from './types';
 import { HTTPMethodOxibooru } from './types';
 import config from './config.json';
+import { setTimeout } from 'timers/promises';
 
 // #region get userToken
 async function authenticateWithResonite(
@@ -103,7 +104,7 @@ const recordsRaw = await fetch(
 if (!recordsRaw.ok)
   throw new Error(
     `Unable to get inventory records: ${recordsRaw.status} - ${recordsRaw.statusText}`
-);
+  );
 const baseRecords = (await recordsRaw.json()) as resoniteInventoryRecord[];
 
 // convert resDB int record url
@@ -123,6 +124,8 @@ const downloadRecords = baseRecords
 // upcycle data and cleanup broken pictures.
 const assetRecords = await Promise.all(
   downloadRecords.map(async (record) => {
+    // FIXME: If there are to many requests which causes teh Resonite API to lock up.
+    // await setTimeout(100);
     // get resonite asset, that holds the component layout and image data
     const rewFileOut = await fetch(record.assetURL);
     const downloadedFile = await rewFileOut.bytes();
@@ -497,6 +500,8 @@ if (users && users.results) {
     if (user.names.length !== 1 && lastChecked < refreshUsernamesInMonths) return;
     const userId = user.names.find((tag) => tag.startsWith('U-'));
     if (!userId) return;
+    // FIXME: If there are to many requests which causes teh Resonite API to lock up.
+    // await setTimeout(100);
     const userRecordRaw = await fetch(`https://api.resonite.com/users/${userId}`, {
       headers: { Authorization },
     });
