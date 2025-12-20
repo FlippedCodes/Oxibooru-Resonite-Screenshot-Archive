@@ -100,6 +100,10 @@ const recordsRaw = await fetch(
   `https://api.resonite.com/users/${tokenBody.entity.userId}/records?path=${config.resonite.photoLocation}`,
   { headers: { Authorization } }
 );
+if (!recordsRaw.ok)
+  throw new Error(
+    `Unable to get inventory records: ${recordsRaw.status} - ${recordsRaw.statusText}`
+);
 const baseRecords = (await recordsRaw.json()) as resoniteInventoryRecord[];
 
 // convert resDB int record url
